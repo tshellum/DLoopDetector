@@ -29,7 +29,7 @@ endif()
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-macro(GetDependency name other_dependency)
+macro(GetDLib name other_dependency)
   find_package(${name} QUIET
     PATHS ${DEPENDENCY_INSTALL_DIR})
   if(${${name}_FOUND})
@@ -57,8 +57,36 @@ macro(GetDependency name other_dependency)
   endif(${${name}_FOUND})
 endmacro(GetDependency)
 
-GetDependency(DLib "")
-GetDependency(DBoW2 DLib)
+macro(GetDBoW2 name other_dependency)
+  find_package(${name} QUIET
+    PATHS ${DEPENDENCY_INSTALL_DIR})
+  if(${${name}_FOUND})
+    message("${name} library found, using it from the system")
+    include_directories(${${name}_INCLUDE_DIRS})
+    add_custom_target(${name}_dep)
+  else(${${name}_FOUND})
+    message("${name} library not found in the system, it will be downloaded on build")
+    option(DOWNLOAD_${name}_dependency "Download ${name} dependency" ON)
+    if(${DOWNLOAD_${name}_dependency})
+      if(NOT ${other_dependency})
+        set(dependency ${other_dependency}_dep)
+      endif()
+      ExternalProject_Add(${name}
+        PREFIX ${DEPENDENCY_DIR}
+        GIT_REPOSITORY http://github.com/tshellum/${name}
+        GIT_TAG master
+        INSTALL_DIR ${DEPENDENCY_INSTALL_DIR}
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> ${DEPENDENCY_CMAKE_ARGS}
+        DEPENDS ${dependency})
+      add_custom_target(${name}_dep ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} DEPENDS ${name})
+    else()
+      message(SEND_ERROR "Please, activate DOWNLOAD_${name}_dependency option or download manually")
+    endif(${DOWNLOAD_${name}_dependency})
+  endif(${${name}_FOUND})
+endmacro(GetDependency)
+
+GetDLib(DLib "")
+GetDBoW2(DBoW2 DLib)
 add_custom_target(Dependencies ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} DEPENDS DBoW2_dep DLib_dep)
 
 include_directories(include/DLoopDetector/)
