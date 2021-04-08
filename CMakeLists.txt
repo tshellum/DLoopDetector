@@ -55,7 +55,7 @@ macro(GetDLib name other_dependency)
       message(SEND_ERROR "Please, activate DOWNLOAD_${name}_dependency option or download manually")
     endif(${DOWNLOAD_${name}_dependency})
   endif(${${name}_FOUND})
-endmacro(GetDependency)
+endmacro(GetDLib)
 
 macro(GetDBoW2 name other_dependency)
   find_package(${name} QUIET
@@ -83,7 +83,7 @@ macro(GetDBoW2 name other_dependency)
       message(SEND_ERROR "Please, activate DOWNLOAD_${name}_dependency option or download manually")
     endif(${DOWNLOAD_${name}_dependency})
   endif(${${name}_FOUND})
-endmacro(GetDependency)
+endmacro(GetDBoW2)
 
 GetDLib(DLib "")
 GetDBoW2(DBoW2 DLib)
